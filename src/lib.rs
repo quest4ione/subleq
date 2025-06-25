@@ -44,7 +44,7 @@ impl<T: PrimInt, M: Memory<T>> Subleq<T, M> {
             self.mem
                 .get(self.curr_instruction.wrapping_add(1))
                 .to_usize()
-                .expect("cant convert numbner into usize address"),
+                .expect("cant convert number into usize address"),
             self.mem
                 .get(self.curr_instruction.wrapping_add(2))
                 .to_usize()
