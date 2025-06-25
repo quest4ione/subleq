@@ -5,6 +5,24 @@ pub trait Memory<T: PrimInt>: Default {
     fn set(&mut self, index: usize, value: T);
 }
 
+pub struct LinearMemory<T: PrimInt, const SIZE: usize>([T; SIZE]);
+
+impl<T: PrimInt, const SIZE: usize> Default for LinearMemory<T, SIZE> {
+    fn default() -> Self {
+        Self([T::zero(); SIZE])
+    }
+}
+
+impl<T: PrimInt, const SIZE: usize> Memory<T> for LinearMemory<T, SIZE> {
+    fn get(&self, index: usize) -> T {
+        self.0[index % SIZE]
+    }
+
+    fn set(&mut self, index: usize, value: T) {
+        self.0[index % SIZE] = value;
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Subleq<T: PrimInt, M: Memory<T>> {
     pub mem: M,
