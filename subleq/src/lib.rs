@@ -1,9 +1,15 @@
 use num::PrimInt;
+use thiserror::Error;
 
+#[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum Error {
+    #[error("value is too large to be converted into an usize address")]
     CantConvertValueToUsize,
+    #[error("address `{0}` is out of range for memory")]
     AddressOutOfRange(usize),
+    #[error("custom error: {0}")]
+    Custom(String),
 }
 
 pub trait Memory<T: PrimInt>: Default {
