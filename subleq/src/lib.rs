@@ -1,31 +1,29 @@
-use num::PrimInt;
+use num::{Signed, Zero, cast::AsPrimitive};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum Error {
-    #[error("value is too large to be converted into an usize address")]
-    CantConvertValueToUsize,
     #[error("address `{0}` is out of range for memory")]
     AddressOutOfRange(usize),
     #[error("custom error: {0}")]
     Custom(String),
 }
 
-pub trait Memory<T: PrimInt>: Default {
+pub trait Memory<T: Signed + Zero + AsPrimitive<usize>>: Default {
     fn get(&self, index: usize) -> Result<T, Error>;
     fn set(&mut self, index: usize, value: T) -> Result<(), Error>;
 }
 
-pub struct LinearMemory<T: PrimInt, const SIZE: usize>([T; SIZE]);
+pub struct LinearMemory<T: Signed + Zero + AsPrimitive<usize>, const SIZE: usize>([T; SIZE]);
 
-impl<T: PrimInt, const SIZE: usize> Default for LinearMemory<T, SIZE> {
+impl<T: Signed + Zero + AsPrimitive<usize>, const SIZE: usize> Default for LinearMemory<T, SIZE> {
     fn default() -> Self {
         Self([T::zero(); SIZE])
     }
 }
 
-impl<T: PrimInt, const SIZE: usize> Memory<T> for LinearMemory<T, SIZE> {
+impl<T: Signed + Zero + AsPrimitive<usize>, const SIZE: usize> Memory<T> for LinearMemory<T, SIZE> {
     fn get(&self, address: usize) -> Result<T, Error> {
         self.0
             .get(address)
@@ -45,13 +43,13 @@ impl<T: PrimInt, const SIZE: usize> Memory<T> for LinearMemory<T, SIZE> {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct Subleq<T: PrimInt, M: Memory<T>> {
+pub struct Subleq<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> {
     pub mem: M,
     pub curr_instruction: usize,
     _marker: std::marker::PhantomData<T>,
 }
 
-impl<T: PrimInt, M: Memory<T>> Default for Subleq<T, M> {
+impl<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> Default for Subleq<T, M> {
     fn default() -> Self {
         Self {
             mem: M::default(),
@@ -61,7 +59,7 @@ impl<T: PrimInt, M: Memory<T>> Default for Subleq<T, M> {
     }
 }
 
-impl<T: PrimInt, M: Memory<T>> Subleq<T, M> {
+impl<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> Subleq<T, M> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -75,19 +73,10 @@ impl<T: PrimInt, M: Memory<T>> Subleq<T, M> {
     }
 
     pub fn step(&mut self) -> Result<(), Error> {
-        let (a, b, c) = (
-            self.mem
-                .get(self.curr_instruction)?
-                .to_usize()
-                .ok_or(Error::CantConvertValueToUsize)?,
-            self.mem
-                .get(self.curr_instruction.wrapping_add(1))?
-                .to_usize()
-                .ok_or(Error::CantConvertValueToUsize)?,
-            self.mem
-                .get(self.curr_instruction.wrapping_add(2))?
-                .to_usize()
-                .ok_or(Error::CantConvertValueToUsize)?,
+        let (a, b, c): (usize, usize, usize) = (
+            self.mem.get(self.curr_instruction)?.as_(),
+            self.mem.get(self.curr_instruction.wrapping_add(1))?.as_(),
+            self.mem.get(self.curr_instruction.wrapping_add(2))?.as_(),
         );
 
         let (a_value, b_value) = (self.mem.get(a)?, self.mem.get(b)?);
@@ -95,7 +84,7 @@ impl<T: PrimInt, M: Memory<T>> Subleq<T, M> {
         let result = b_value - a_value;
         self.mem.set(b, result)?;
 
-        if result <= T::zero() {
+        if !result.is_positive() {
             self.curr_instruction = c;
         } else {
             self.curr_instruction = self.curr_instruction.wrapping_add(3)
