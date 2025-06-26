@@ -6,8 +6,10 @@ use thiserror::Error;
 pub enum Error {
     #[error("address `{0}` is out of range for memory")]
     AddressOutOfRange(usize),
+    #[error("immutable memory address `{0}`")]
+    ImmutableAddress(usize),
     #[error("custom error: {0}")]
-    Custom(String),
+    Custom(#[source] Box<dyn std::error::Error>),
 }
 
 pub trait Memory<T: Signed + Zero + AsPrimitive<usize>>: Default {
