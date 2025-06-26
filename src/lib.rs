@@ -69,19 +69,13 @@ impl<T: PrimInt, M: Memory<T>> Subleq<T, M> {
                 .expect("cant convert number into usize address"),
         );
 
-        let (a, b, c) = (
-            self.mem.get(a_addr),
-            self.mem.get(b_addr),
-            self.mem.get(c_addr),
-        );
+        let (a, b) = (self.mem.get(a_addr), self.mem.get(b_addr));
 
         let result = b - a;
         self.mem.set(b_addr, result);
 
         if result <= T::zero() {
-            self.curr_instruction = c
-                .to_usize()
-                .expect("cant convert number into usize address");
+            self.curr_instruction = c_addr;
         } else {
             self.curr_instruction = self.curr_instruction.wrapping_add(3)
         }
