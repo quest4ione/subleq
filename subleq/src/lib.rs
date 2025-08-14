@@ -1,18 +1,23 @@
-mod error;
-pub mod memory;
-pub use error::Error;
-pub use memory::Memory;
 
-use num::{Signed, Zero, cast::AsPrimitive};
 
+use num::{Signed, cast::AsPrimitive};
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct Subleq<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> {
+pub struct Subleq<T, M>
+where
+    T: Signed + AsPrimitive<usize>,
+    M: Memory<T>,
+{
     pub mem: M,
     pub curr_instruction: usize,
+    #[doc(hidden)]
     _marker: std::marker::PhantomData<T>,
 }
 
-impl<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> Default for Subleq<T, M> {
+impl<T, M> Default for Subleq<T, M>
+where
+    T: Signed + AsPrimitive<usize>,
+    M: Memory<T> + Default,
+{
     fn default() -> Self {
         Self {
             mem: M::default(),
@@ -22,20 +27,16 @@ impl<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> Default for Subleq<T, 
     }
 }
 
-impl<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> Subleq<T, M> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn with_memory(mem: M) -> Self {
+impl<T: Signed + AsPrimitive<usize>, M: Memory<T>> Subleq<T, M> {
+    pub fn new(memory: M) -> Self {
         Self {
-            mem,
+            mem: memory,
             curr_instruction: 0,
             _marker: std::marker::PhantomData,
         }
     }
 
-    pub fn step(&mut self) -> Result<(), Error> {
+    pub fn step(&mut self) -> Result<(), M::Error> {
         let (a, b, c): (usize, usize, usize) = (
             self.mem.get(self.curr_instruction)?.as_(),
             self.mem.get(self.curr_instruction.wrapping_add(1))?.as_(),
@@ -54,4 +55,15 @@ impl<T: Signed + Zero + AsPrimitive<usize>, M: Memory<T>> Subleq<T, M> {
         }
         Ok(())
     }
+}
+
+pub trait Memory<T>
+where
+    T: Signed + AsPrimitive<usize>,
+{
+    type Error: std::error::Error;
+
+    fn get(&self, index: usize) -> Result<T, Self::Error>;
+
+    fn set(&mut self, index: usize, value: T) -> Result<(), Self::Error>;
 }
