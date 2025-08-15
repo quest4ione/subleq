@@ -48,7 +48,7 @@ while let Ok(_) = subleq.step() { }
 
 
 ## Documentation
-<https://docs.rs/qelsub/>
+no web version yet
 
 ## License
 
