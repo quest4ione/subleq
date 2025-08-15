@@ -37,6 +37,7 @@ use num::{
 /// ```
 ///
 ///
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Subleq<T, M>
 where
     T: Signed + WrappingAdd + WrappingSub + From<i8> + Copy,
