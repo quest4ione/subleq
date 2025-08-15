@@ -35,8 +35,6 @@ use num::{
 ///     jump curr_instruction + 3
 /// }
 /// ```
-///
-///
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Subleq<T, M>
 where
