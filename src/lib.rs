@@ -2,9 +2,51 @@
 //!
 //! Provides a subleq interpreter and a trait to customize memory mappings.
 //!
-//! See [Subleq] for an explanation of the instruction set.
+//! Subleq is a instruction set which contains only one instruction: subleq.
+//! A subleq computer has a single memory unit in which both the program and its data is stored.
+//! The subleq instruction has three arguments: A, B and C.
+//! Firstly, the computer substracts the value at address A from the value at address B.
+//! Then it stores the result at address B. If the result is smaller than or equals 0,
+//! the computer jumps to address C. If it isn't, the computer continues to the next instruction.
+//! ```text
+//! read instruction -> (A, B, C)
+//! MEM[B] = MEM[B] - MEM[A]
+//! if MEM[B] <= 0 {
+//!     jump C
+//! } else {
+//!     jump curr_instruction + 3
+//! }
+//! ```
 //!
-//! See [Subleq] and [Memory] for usage examples.
+//! ```no_run
+//! # use qelbus::{Memory, Subleq};
+//! struct ByteMemory([i8; 256]);
+//!
+//! impl Memory<i8> for ByteMemory {
+//!   type Error = std::convert::Infallible;
+//!
+//!   fn get(&self, index: &i8) -> Result<&i8, Self::Error> {
+//!     Ok(&self.0[*index as u8 as usize])
+//!   }
+//!
+//!   fn set(&mut self, index: &i8, value: i8) -> Result<(), Self::Error> {
+//!     self.0[*index as u8 as usize] = value;
+//!     Ok(())
+//!   }
+//! }
+//!
+//! impl ByteMemory {
+//!   fn new() -> Self {
+//!     Self([0; 256])  
+//!   }
+//! }
+//!
+//! let mut memory = ByteMemory::new();
+//! // <initialize memory with a program>
+//! let mut subleq = Subleq::new(memory);
+//!
+//! while let Ok(_) = subleq.step() { }
+//! ```
 #![deny(
     missing_docs,
     clippy::missing_docs_in_private_items,
