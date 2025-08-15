@@ -16,6 +16,37 @@ if MEM[B] <= 0 {
 }
 ```
 
+## Usage
+```rust
+use qelbus::{Memory, Subleq};
+struct ByteMemory([i8; 256]);
+
+impl Memory<i8> for ByteMemory {
+  type Error = std::convert::Infallible;
+
+  fn get(&self, index: &i8) -> Result<&i8, Self::Error> {
+    Ok(&self.0[*index as u8 as usize])
+  }
+
+  fn set(&mut self, index: &i8, value: i8) -> Result<(), Self::Error> {
+    self.0[*index as u8 as usize] = value;
+    Ok(())
+  }
+}
+
+impl ByteMemory {
+  fn new() -> Self {
+    Self([0; 256])  
+  }
+}
+
+let mut memory = ByteMemory::new();
+// <initialize memory with a program>
+let mut subleq = Subleq::new(memory);
+while let Ok(_) = subleq.step() { }
+```
+
+
 ## Documentation
 <https://docs.rs/qelsub/>
 
