@@ -79,20 +79,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "qelbus"
+version = "0.1.0"
+dependencies = [
+ "num",
+ "thiserror",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1885c039570dc00dcb4ff087a89e185fd56bae234ddc7f056a945bf36467248d"
 dependencies = [
  "proc-macro2",
-]
-
-[[package]]
-name = "subleq"
-version = "0.1.0"
-dependencies = [
- "num",
- "thiserror",
 ]
 
 [[package]]

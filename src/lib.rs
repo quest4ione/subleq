@@ -70,7 +70,7 @@ where
     /// Construct a new [Subleq] struct from a [Memory] that starts execution at the first address.
     ///
     /// ```
-    /// # use subleq::{Subleq, Memory};
+    /// # use qelbus::{Subleq, Memory};
     /// # struct ByteMemory([i8; 256]);
     /// #
     /// # impl Memory<i8> for ByteMemory {
@@ -106,7 +106,7 @@ where
     ///    set the instruction pointer to address C. Otherwise set it to the next instruction.
     ///
     /// ```no_run
-    /// # use subleq::{Subleq, Memory};
+    /// # use qelbus::{Subleq, Memory};
     /// # struct ByteMemory([i8; 256]);
     /// #
     /// # impl Memory<i8> for ByteMemory {
@@ -153,7 +153,7 @@ where
 ///
 /// Example implementation
 /// ```
-/// # use subleq::Memory;
+/// # use qelbus::Memory;
 /// struct ByteMemory([i8; 256]);
 ///
 /// impl Memory<i8> for ByteMemory {
