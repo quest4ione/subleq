@@ -186,7 +186,7 @@ where
 
     /// Get the instruction at an address or return an error.
     ///
-    /// The provided implementation calls [Self::value].
+    /// The provided implementation calls [Self::get].
     ///
     /// # Errors
     /// Errors are implementation-specfific, see [Self::Error].
