@@ -180,7 +180,7 @@ where
 
         let result = b_value.wrapping_sub(a_value);
 
-        if !b_value.is_positive() {
+        if !result.is_positive() {
             self.curr_instruction = *c;
         } else {
             self.curr_instruction = self.curr_instruction.wrapping_add(&T::from(3i8));
