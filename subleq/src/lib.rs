@@ -1,69 +1,77 @@
 
+use num::{
+    Signed,
+    traits::{WrappingAdd, WrappingSub},
+};
 
-use num::{Signed, cast::AsPrimitive};
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Subleq<T, M>
 where
-    T: Signed + AsPrimitive<usize>,
+    T: Signed + WrappingAdd + WrappingSub + From<i8> + Copy,
     M: Memory<T>,
 {
     pub mem: M,
-    pub curr_instruction: usize,
+    pub curr_instruction: T,
     #[doc(hidden)]
     _marker: std::marker::PhantomData<T>,
 }
 
 impl<T, M> Default for Subleq<T, M>
 where
-    T: Signed + AsPrimitive<usize>,
+    T: Signed + WrappingAdd + WrappingSub + From<i8> + Copy,
     M: Memory<T> + Default,
 {
     fn default() -> Self {
-        Self {
-            mem: M::default(),
-            curr_instruction: 0,
-            _marker: std::marker::PhantomData,
-        }
+        Self::new(M::default())
     }
 }
 
-impl<T: Signed + AsPrimitive<usize>, M: Memory<T>> Subleq<T, M> {
+impl<T, M> Subleq<T, M>
+where
+    T: Signed + WrappingAdd + WrappingSub + From<i8> + Copy,
+    M: Memory<T>,
+{
     pub fn new(memory: M) -> Self {
         Self {
             mem: memory,
-            curr_instruction: 0,
+            curr_instruction: T::zero(),
             _marker: std::marker::PhantomData,
         }
     }
 
     pub fn step(&mut self) -> Result<(), M::Error> {
-        let (a, b, c): (usize, usize, usize) = (
-            self.mem.get(self.curr_instruction)?.as_(),
-            self.mem.get(self.curr_instruction.wrapping_add(1))?.as_(),
-            self.mem.get(self.curr_instruction.wrapping_add(2))?.as_(),
-        );
+        let (a, b, c) = self.mem.instruction(&self.curr_instruction)?;
 
-        let (a_value, b_value) = (self.mem.get(a)?, self.mem.get(b)?);
+        let (a_value, b_value) = (self.mem.value(a)?, self.mem.value(&b)?);
 
-        let result = b_value - a_value;
-        self.mem.set(b, result)?;
+        let result = b_value.wrapping_sub(a_value);
 
-        if !result.is_positive() {
-            self.curr_instruction = c;
+        if !b_value.is_positive() {
+            self.curr_instruction = *c;
         } else {
-            self.curr_instruction = self.curr_instruction.wrapping_add(3)
+            self.curr_instruction = self.curr_instruction.wrapping_add(&T::from(3i8));
         }
+
+        self.mem.set_value(&b, result)?;
         Ok(())
     }
 }
 
 pub trait Memory<T>
 where
-    T: Signed + AsPrimitive<usize>,
+    T: WrappingAdd + From<i8> + Copy,
 {
+    /// An error while using the memory
     type Error: std::error::Error;
 
-    fn get(&self, index: usize) -> Result<T, Self::Error>;
+    fn value(&self, index: &T) -> Result<&T, Self::Error>;
 
-    fn set(&mut self, index: usize, value: T) -> Result<(), Self::Error>;
+    fn instruction(&self, index: &T) -> Result<(&T, T, &T), Self::Error> {
+        Ok((
+            self.value(index)?,
+            *self.value(&index.wrapping_add(&T::from(1i8)))?,
+            self.value(&index.wrapping_add(&T::from(2i8)))?,
+        ))
+    }
+
+    fn set_value(&mut self, index: &T, value: T) -> Result<(), Self::Error>;
 }
