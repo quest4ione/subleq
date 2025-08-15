@@ -42,7 +42,7 @@ where
     M: Memory<T>,
 {
     /// The memory that the subleq program is stored in.
-    pub mem: M,
+    pub memory: M,
     /// The address of the first argument of the instruction which is going to be executed next.
     pub curr_instruction: T,
     #[doc(hidden)]
@@ -92,7 +92,7 @@ where
     /// ```
     pub fn new(memory: M) -> Self {
         Self {
-            mem: memory,
+            memory,
             curr_instruction: T::zero(),
             _marker: std::marker::PhantomData,
         }
@@ -132,9 +132,9 @@ where
     /// Returns an [Memory::Error] when getting or setting [Memory] fails.
     /// The error type is specific to the [Memory] implementation.
     pub fn step(&mut self) -> Result<(), M::Error> {
-        let (a, b, c) = self.mem.instruction(&self.curr_instruction)?;
+        let (a, b, c) = self.memory.instruction(&self.curr_instruction)?;
 
-        let (a_value, b_value) = (self.mem.get(a)?, self.mem.get(&b)?);
+        let (a_value, b_value) = (self.memory.get(a)?, self.memory.get(&b)?);
 
         let result = b_value.wrapping_sub(a_value);
 
@@ -144,7 +144,7 @@ where
             self.curr_instruction = self.curr_instruction.wrapping_add(&T::from(3i8));
         }
 
-        self.mem.set(&b, result)?;
+        self.memory.set(&b, result)?;
         Ok(())
     }
 }
