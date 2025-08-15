@@ -2,6 +2,12 @@
 name = "subleq"
 version = "0.1.0"
 edition = "2024"
+authors = ["quest4ione"]
+description = "Customizable [subleq](https://esolangs.org/wiki/Subleq) instruction set program execution."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/quest4ione/subleq"
+keywords = ["subleq", "interpreter"]
+categories = ["compilers"]
 
 [dependencies]
 num = { version = "0.4.3", default-features = false }
