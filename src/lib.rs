@@ -2,7 +2,7 @@
 //!
 //! Provides a subleq interpreter and a trait to customize memory mappings.
 //!
-//! Subleq is a instruction set which contains only one instruction: subleq.
+//! Subleq is an instruction set which contains only one instruction: subleq.
 //! A subleq computer has a single memory unit in which both the program and its data is stored.
 //! The subleq instruction has three arguments: A, B and C.
 //! Firstly, the computer substracts the value at address A from the value at address B.
