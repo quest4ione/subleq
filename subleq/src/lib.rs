@@ -41,7 +41,7 @@ where
     pub fn step(&mut self) -> Result<(), M::Error> {
         let (a, b, c) = self.mem.instruction(&self.curr_instruction)?;
 
-        let (a_value, b_value) = (self.mem.value(a)?, self.mem.value(&b)?);
+        let (a_value, b_value) = (self.mem.get(a)?, self.mem.get(&b)?);
 
         let result = b_value.wrapping_sub(a_value);
 
@@ -63,15 +63,15 @@ where
     /// An error while using the memory
     type Error: std::error::Error;
 
-    fn value(&self, index: &T) -> Result<&T, Self::Error>;
+    fn get(&self, index: &T) -> Result<&T, Self::Error>;
 
     fn instruction(&self, index: &T) -> Result<(&T, T, &T), Self::Error> {
         Ok((
-            self.value(index)?,
-            *self.value(&index.wrapping_add(&T::from(1i8)))?,
-            self.value(&index.wrapping_add(&T::from(2i8)))?,
+            self.get(index)?,
+            *self.get(&index.wrapping_add(&T::from(1i8)))?,
+            self.get(&index.wrapping_add(&T::from(2i8)))?,
         ))
     }
 
-    fn set_value(&mut self, index: &T, value: T) -> Result<(), Self::Error>;
+    fn set(&mut self, index: &T, value: T) -> Result<(), Self::Error>;
 }
