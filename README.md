@@ -17,7 +17,7 @@ if MEM[B] <= 0 {
 ```
 
 ## Documentation
-<https://docs.rs/subleq/latest/subleq/index.html>
+<https://docs.rs/qelsub/>
 
 ## License
 
