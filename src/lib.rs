@@ -176,7 +176,7 @@ where
     pub fn step(&mut self) -> Result<(), M::Error> {
         let (a, b, c) = self.memory.instruction(&self.curr_instruction)?;
 
-        let (a_value, b_value) = (self.memory.get(a)?, self.memory.get(&b)?);
+        let (a_value, b_value) = (self.memory.get(a)?, self.memory.get(b)?);
 
         let result = b_value.wrapping_sub(a_value);
 
@@ -186,6 +186,7 @@ where
             self.curr_instruction = self.curr_instruction.wrapping_add(&T::from(3i8));
         }
 
+        let b = *b;
         self.memory.set(&b, result)?;
         Ok(())
     }
@@ -230,10 +231,10 @@ where
     ///
     /// # Errors
     /// Errors are implementation-specfific, see [Self::Error].
-    fn instruction(&self, index: &T) -> Result<(&T, T, &T), Self::Error> {
+    fn instruction(&self, index: &T) -> Result<(&T, &T, &T), Self::Error> {
         Ok((
             self.get(index)?,
-            *self.get(&index.wrapping_add(&T::from(1i8)))?,
+            self.get(&index.wrapping_add(&T::from(1i8)))?,
             self.get(&index.wrapping_add(&T::from(2i8)))?,
         ))
     }
