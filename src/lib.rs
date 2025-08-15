@@ -174,22 +174,35 @@ where
     /// Returns an [Memory::Error] when getting or setting [Memory] fails.
     /// The error type is specific to the [Memory] implementation.
     pub fn step(&mut self) -> Result<(), M::Error> {
-        let (a, b, c) = self.memory.instruction(&self.curr_instruction)?;
+        let instruction = self.memory.instruction(&self.curr_instruction)?;
 
-        let (a_value, b_value) = (self.memory.get(a)?, self.memory.get(b)?);
+        let (a_value, b_value) = (
+            self.memory.get(instruction.a)?,
+            self.memory.get(instruction.b)?,
+        );
 
         let result = b_value.wrapping_sub(a_value);
 
         if !result.is_positive() {
-            self.curr_instruction = *c;
+            self.curr_instruction = *instruction.c;
         } else {
             self.curr_instruction = self.curr_instruction.wrapping_add(&T::from(3i8));
         }
 
-        let b = *b;
-        self.memory.set(&b, result)?;
+        let b_copy = *instruction.b;
+        self.memory.set(&b_copy, result)?;
         Ok(())
     }
+}
+
+/// Represent an instruction.
+pub struct Instruction<'a, T> {
+    /// The subtrahend address.
+    pub a: &'a T,
+    /// The minuend and store address.
+    pub b: &'a T,
+    /// The address to jump to.
+    pub c: &'a T,
 }
 
 /// Represent a read- and writable Memory implementation.
@@ -231,12 +244,12 @@ where
     ///
     /// # Errors
     /// Errors are implementation-specfific, see [Self::Error].
-    fn instruction(&self, index: &T) -> Result<(&T, &T, &T), Self::Error> {
-        Ok((
-            self.get(index)?,
-            self.get(&index.wrapping_add(&T::from(1i8)))?,
-            self.get(&index.wrapping_add(&T::from(2i8)))?,
-        ))
+    fn instruction(&self, index: &T) -> Result<Instruction<'_, T>, Self::Error> {
+        Ok(Instruction {
+            a: self.get(index)?,
+            b: self.get(&index.wrapping_add(&T::from(1i8)))?,
+            c: self.get(&index.wrapping_add(&T::from(2i8)))?,
+        })
     }
 
     /// Set the value at an address or return an error.
